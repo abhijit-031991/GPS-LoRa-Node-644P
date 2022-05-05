@@ -30,7 +30,7 @@ const int PROGMEM LDIO = 0;
 
 ///// DEVICE DEFINITIONS /////
 
-const uint16_t tag = 10106;
+const uint16_t tag = 10112;
 const uint8_t devType = 107;
 
 ///// VARIABLES /////
@@ -58,7 +58,7 @@ bool wipe = true;                // Enable/Disable wiping of Flash Memory *** US
 bool act_mode = false;             // Activty Mode Parameter
 bool scheduled = false;            // Enable or diable schedule mode *** USER CONFIG *** x
 bool window = false;              // Schedule window on/off parameter
-bool activity_enabled = true;     // Enable/Disable Activity mode *** USER CONFIG *** x
+bool activity_enabled = false;     // Enable/Disable Activity mode *** USER CONFIG *** x
 
 // Accelerometer Variables //
 int act_treshold = 30;            // Activity threshold 0-255 *** USER CONFIG *** 
@@ -677,6 +677,13 @@ void setup() {
   adxl.setImportantInterruptMapping(1,1,1,1,1);
   adxl.setActivityXYZ(1,1,1);
   adxl.setActivityThreshold(act_treshold);
+  if (activity_enabled == true)
+  {
+    adxl.ActivityINT(1);
+  }else{
+    adxl.ActivityINT(0);
+  }
+  
   adxl.ActivityINT(1);
   adxl.doubleTapINT(0);
   adxl.singleTapINT(0);

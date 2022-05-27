@@ -30,7 +30,7 @@ const int PROGMEM LDIO = 0;
 
 ///// DEVICE DEFINITIONS /////
 
-const uint16_t tag = 10112;
+const uint16_t tag = 10401;
 const uint8_t devType = 107;
 
 ///// VARIABLES /////
@@ -142,46 +142,46 @@ void activationPing(){
     Serial.println(EEPROM.read(1));
     Serial.print(F("System Initialising"));
      /// Begin GPS and Acquire Lock ////
-    // digitalWrite(GPS_PIN, HIGH);
-    //   do{ 
-    //     while (gps_serial.available() > 0)
-    //     {
-    //       if (gps.encode(gps_serial.read()))
-    //       {
-    //         if (!gps.location.isValid())
-    //         {
-    //           Serial.println(F("Not Valid"));
-    //         }else{
-    //           Serial.println(gps.location.isUpdated());
-    //           Serial.print("Location Age:");
-    //           Serial.println(gps.location.age());
-    //           Serial.print("Time Age:");
-    //           Serial.println(gps.time.age());
-    //           Serial.print("Date Age:");
-    //           Serial.println(gps.date.age());
-    //           Serial.print("Satellites:");
-    //           Serial.println(gps.satellites.value());
-    //           Serial.print("HDOP:");
-    //           Serial.println(gps.hdop.hdop());
-    //         }
-    //       }
-    //     }
-    //   }while(!gps.location.isValid());
-    // if (gps.location.age() < 60000)
-    // {
-    //   //pack data into struct
-    //   lat = gps.location.lat();
-    //   lng = gps.location.lng();
-    // }
-    // if (gps.time.isValid())
-    // {
-    //   setTime(gps.time.hour(),gps.time.minute(),gps.time.second(),gps.date.day(),gps.date.month(),gps.date.year());
-    //   time_t n = now();
-    //   strtTime = n;
-    //   Serial.print(F("START TIME")); Serial.println(strtTime);
-    // }
+    digitalWrite(GPS_PIN, HIGH);
+      do{ 
+        while (gps_serial.available() > 0)
+        {
+          if (gps.encode(gps_serial.read()))
+          {
+            if (!gps.location.isValid())
+            {
+              Serial.println(F("Not Valid"));
+            }else{
+              Serial.println(gps.location.isUpdated());
+              Serial.print("Location Age:");
+              Serial.println(gps.location.age());
+              Serial.print("Time Age:");
+              Serial.println(gps.time.age());
+              Serial.print("Date Age:");
+              Serial.println(gps.date.age());
+              Serial.print("Satellites:");
+              Serial.println(gps.satellites.value());
+              Serial.print("HDOP:");
+              Serial.println(gps.hdop.hdop());
+            }
+          }
+        }
+      }while(!gps.location.isValid());
+    if (gps.location.age() < 60000)
+    {
+      //pack data into struct
+      lat = gps.location.lat();
+      lng = gps.location.lng();
+    }
+    if (gps.time.isValid())
+    {
+      setTime(gps.time.hour(),gps.time.minute(),gps.time.second(),gps.date.day(),gps.date.month(),gps.date.year());
+      time_t n = now();
+      strtTime = n;
+      Serial.print(F("START TIME")); Serial.println(strtTime);
+    }
     
-    // digitalWrite(GPS_PIN, LOW);
+    digitalWrite(GPS_PIN, LOW);
     
     wipe = true;
 

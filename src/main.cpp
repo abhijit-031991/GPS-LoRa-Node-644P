@@ -30,7 +30,7 @@ const int PROGMEM LDIO = 0;
 
 ///// DEVICE DEFINITIONS /////
 
-const uint16_t tag = 10401;
+const uint16_t tag = 11111;
 const uint8_t devType = 107;
 
 ///// VARIABLES /////
@@ -61,7 +61,7 @@ bool window = false;              // Schedule window on/off parameter
 bool activity_enabled = false;     // Enable/Disable Activity mode *** USER CONFIG *** x
 
 // Accelerometer Variables //
-int act_treshold = 30;            // Activity threshold 0-255 *** USER CONFIG *** 
+int act_treshold = 120;            // Activity threshold 0-255 *** USER CONFIG *** 
 int act_gpsFrequency = 15;         // Activity mode GPS Frequency *** USER CONFIG ***
 int act_duration = 60;             // Activity mode duration in minutes *** USER CONFIG ***
 time_t act_start;                 // activity mode start time
@@ -786,10 +786,15 @@ void loop() {
       recGPS();
       ////////////////////////////////////////////////
       prevTime = RTC.get();
-      RTC.alarmPolarity(HIGH);
-      RTC.setAlarm(1, prevTime + 60*radioFrequency);
-      pingTime = prevTime + 60*radioFrequency;    
-      RTC.enableAlarm(1, ALM_MATCH_DATETIME);   
+      if (window == true)
+      {
+        RTC.alarmPolarity(HIGH);      
+        RTC.setAlarm(1, prevTime + 60*radioFrequency); // Add if statement for sch Mode
+        pingTime = prevTime + 60*radioFrequency;    
+        RTC.enableAlarm(1, ALM_MATCH_DATETIME);
+      }
+      
+         
       /////////////////////////////////////////////// 
     }
     if(RTC.alarm(1)){

@@ -30,7 +30,7 @@ const int PROGMEM LDIO = 0;
 
 ///// DEVICE DEFINITIONS /////
 
-const uint16_t tag = 11111;
+const uint16_t tag = 10502;
 const uint8_t devType = 107;
 
 ///// VARIABLES /////
@@ -44,17 +44,17 @@ uint32_t rAdd = 0;                // Read Address Parameter
 uint16_t cnt;                     // No. of data points available for download
 
 // Time Variable //
-time_t strtTime = 1640841540;     // Device Time Set During Start Up
+time_t strtTime = 1657110840;     // Device Time Set During Start Up
 time_t pingTime;                  // Ping Alram set in code
 time_t gpsTime;                   // GPS Alarm Set in code
-time_t PingAlarmTime = 1640841600;             // Stores scheduled ping time in scheduled mode *** USER CONFIG *** x
+time_t PingAlarmTime = 1657110900;             // Stores scheduled ping time in scheduled mode *** USER CONFIG *** x
 
 // Volatile Variables //
 volatile bool Alarm_Trig = false; // Alarm 1
 volatile bool trigger = false;    // Activity Trigger
 
 // Other Variables //
-bool wipe = true;                // Enable/Disable wiping of Flash Memory *** USER CONFIG *** x
+bool wipe = false;                // Enable/Disable wiping of Flash Memory *** USER CONFIG *** x
 bool act_mode = false;             // Activty Mode Parameter
 bool scheduled = false;            // Enable or diable schedule mode *** USER CONFIG *** x
 bool window = false;              // Schedule window on/off parameter
@@ -280,6 +280,59 @@ void activationPing(){
     sleep();
   }else{
     Serial.println(F("Reset"));
+    Serial.print(F("System Re - Initialising"));
+    EEPROM.write(1, true);
+    Serial.println(EEPROM.read(1));
+     /// Begin GPS and Acquire Lock ////
+    digitalWrite(GPS_PIN, HIGH);
+      do{ 
+        while (gps_serial.available())
+        {
+          if (gps.encode(gps_serial.read()))
+          {
+            if (!gps.location.isValid())
+            {
+              Serial.println(F("Not Valid"));
+            }else{
+              Serial.println(gps.location.isUpdated());
+              Serial.print("Location Age:");
+              Serial.println(gps.location.age());
+              Serial.print("Time Age:");
+              Serial.println(gps.time.age());
+              Serial.print("Date Age:");
+              Serial.println(gps.date.age());
+              Serial.print("Satellites:");
+              Serial.println(gps.satellites.value());
+              Serial.print("HDOP:");
+              Serial.println(gps.hdop.hdop());
+            }
+          }
+        }
+      }while(!gps.location.isValid());
+    if (gps.location.age() < 60000)
+    {
+      //pack data into struct
+      lat = gps.location.lat();
+      lng = gps.location.lng();
+    }
+    if (gps.time.isValid())
+    {
+      setTime(gps.time.hour(),gps.time.minute(),gps.time.second(),gps.date.day(),gps.date.month(),gps.date.year());
+      time_t n = now();
+      strtTime = n;
+      Serial.print(F("START TIME")); Serial.println(strtTime);
+    }
+    digitalWrite(GPS_PIN, LOW);
+
+    wipe = false;
+
+    px1.request = (byte)105;
+    px1.tag = tag;
+    LoRa.idle();
+    LoRa.beginPacket();
+    LoRa.write((uint8_t*)&px1, sizeof(px1));
+    LoRa.endPacket();
+    LoRa.sleep();
   }
     
 }
@@ -454,7 +507,7 @@ void receive(unsigned int time){
   Serial.println(F("Receiving"));
   LoRa.idle();
   mTime = 0;
-  int x;
+  int x = 0;
   do
   {  
     x = LoRa.parsePacket();
@@ -660,6 +713,7 @@ void setup() {
     }
   }else{
     rAdd = flash.getAddress(16);
+    wAdd = flash.getAddress(16);
   }    
   if(flash.powerDown()){
     Serial.println("Powered Down");
@@ -684,7 +738,7 @@ void setup() {
     adxl.ActivityINT(0);
   }
   
-  adxl.ActivityINT(1);
+  // adxl.ActivityINT(1);
   adxl.doubleTapINT(0);
   adxl.singleTapINT(0);
   adxl.InactivityINT(0);
@@ -707,6 +761,7 @@ void setup() {
   }
   
   gpsTime = strtTime + 60*gpsFrequency;
+  Serial.println(gpsTime);
   RTC.enableAlarm(0, ALM_MATCH_DATETIME);
   RTC.enableAlarm(1, ALM_MATCH_DATETIME);
   digitalWrite(RTC_PIN, LOW);
@@ -786,14 +841,20 @@ void loop() {
       recGPS();
       ////////////////////////////////////////////////
       prevTime = RTC.get();
-      if (window == true)
-      {
+      if(scheduled == true){
+        if (window == true)
+        {
+          RTC.alarmPolarity(HIGH);      
+          RTC.setAlarm(1, prevTime + 60*radioFrequency); // Add if statement for sch Mode
+          pingTime = prevTime + 60*radioFrequency;    
+          RTC.enableAlarm(1, ALM_MATCH_DATETIME);
+        }
+      }else{
         RTC.alarmPolarity(HIGH);      
         RTC.setAlarm(1, prevTime + 60*radioFrequency); // Add if statement for sch Mode
         pingTime = prevTime + 60*radioFrequency;    
         RTC.enableAlarm(1, ALM_MATCH_DATETIME);
-      }
-      
+      }      
          
       /////////////////////////////////////////////// 
     }
@@ -835,6 +896,7 @@ void loop() {
         }        
       }
       RTC.enableAlarm(1, ALM_MATCH_DATETIME);
+      Serial.print(F("GPSTime :")); Serial.println(gpsTime);
       Ping(lat,lng,tag, cnt, devType);
       receive(rcv_duration*1000);
       

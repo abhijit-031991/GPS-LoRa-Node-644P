@@ -30,7 +30,7 @@
 
 // ///// DEVICE DEFINITIONS /////
 
-// const uint16_t tag = 10203;
+// const uint16_t tag = 11111;
 // const uint8_t devType = 107;
 
 // ///// VARIABLES /////
@@ -44,10 +44,10 @@
 // uint16_t cnt;                     // No. of data points available for download
 
 // // Time Variable //
-// time_t strtTime = 1639670200;     // Device Time Set During Start Up
+// time_t strtTime = 1640841540;     // Device Time Set During Start Up
 // time_t pingTime;                  // Ping Alram set in code
 // time_t gpsTime;                   // GPS Alarm Set in code
-// time_t PingAlarmTime = 1639671500;             // Stores scheduled ping time in scheduled mode *** USER CONFIG *** x
+// time_t PingAlarmTime = 1640841600;             // Stores scheduled ping time in scheduled mode *** USER CONFIG *** x
 
 // // Volatile Variables //
 // volatile bool Alarm_Trig = false; // Alarm 1
@@ -58,7 +58,7 @@
 // bool act_mode = false;             // Activty Mode Parameter
 // bool scheduled = false;            // Enable or diable schedule mode *** USER CONFIG *** x
 // bool window = false;              // Schedule window on/off parameter
-// bool activity_enabled = false;     // Enable/Disable Activity mode *** USER CONFIG *** x
+// bool activity_enabled = true;     // Enable/Disable Activity mode *** USER CONFIG *** x
 
 // // Accelerometer Variables //
 // int act_treshold = 30;            // Activity threshold 0-255 *** USER CONFIG *** 
@@ -69,7 +69,7 @@
 
 // // GPS Control Variables //
 // int gpsFrequency = 60;            // GPS Frequency in minutes *** USER CONFIG ***
-// int gpsTimeout = 10;              // GPS Timesout after 'x' seconds *** USER CONFIG ***
+// int gpsTimeout = 60;              // GPS Timesout after 'x' seconds *** USER CONFIG ***
 // int gpsHdop = 5;                  // GPS HODP Parameter *** USER CONFIG ***
 
 // // GPS Storage Variables //
@@ -296,29 +296,41 @@
 //   noSleep();
 // }
 
-// void recGPS(float x, float y){
+// void recGPS(){
 //   mTime = 0;
-// //   digitalWrite(GPS_PIN, HIGH);
-// //   Serial.println(gpsTimeout*1000);
-// //   while (mTime <= (unsigned)gpsTimeout*1000)
-// //   {
-// //     while (gps_serial.available())
-// //     {
-// //       if (gps.encode(gps_serial.read()))
-// //       {
-// //         if (!gps.location.isValid())
-// //         {
-// //           Serial.println("Acquiring");
-// //         }        
-// //       }      
-// //     }
-// //     if (gps.hdop.hdop() < (double)gpsHdop && gps.location.age() < 1000)
-// //     {
-// //       break;
-// //     }  
-// //   }   
+//   digitalWrite(GPS_PIN, HIGH);
+//   Serial.println(gpsTimeout*1000);
+//   while (mTime <= (unsigned)gpsTimeout*1000)
+//   {
+//     while (gps_serial.available())
+//     {
+//       if (gps.encode(gps_serial.read()))
+//       {
+//         if (!gps.location.isValid())
+//         {
+//           Serial.println("Acquiring");
+//         }else{
+//           Serial.println(gps.location.isUpdated());
+//           Serial.print("Location Age:");
+//           Serial.println(gps.location.age());
+//           Serial.print("Time Age:");
+//           Serial.println(gps.time.age());
+//           Serial.print("Date Age:");
+//           Serial.println(gps.date.age());
+//           Serial.print("Satellites:");
+//           Serial.println(gps.satellites.value());
+//           Serial.print("HDOP:");
+//           Serial.println(gps.hdop.hdop());
+//         }       
+//       }      
+//     }
+//     if (gps.hdop.hdop() < (double)gpsHdop && gps.location.age() < 1000)
+//     {
+//       break;
+//     }  
+//   }   
 
-// //   digitalWrite(GPS_PIN, LOW);
+//   digitalWrite(GPS_PIN, LOW);
 //   struct data{
 //     uint32_t datetime;
 //     uint16_t locktime;
@@ -328,21 +340,21 @@
 //     bool act;
 //     }dat;
 
-// //   if (gps.location.age() < 60000)
-// //   {
-// //     //pack data into struct
-// //     x = gps.location.lat();
-// //     y = gps.location.lng();
-// //     dat.lat = gps.location.lat();
-// //     dat.lng = gps.location.lng();
-// //   }else{
+//   if (gps.location.age() < 60000)
+//   {
+//     //pack data into struct
+//     lat = gps.location.lat();
+//     lng = gps.location.lng();
+//     dat.lat = gps.location.lat();
+//     dat.lng = gps.location.lng();
+//   }else{
 //     // pack data into struct with lat long = 0
-//     dat.lat = 13.123445;
-//     dat.lng = 77.214341;
-// //   }
+//     dat.lat = 0;
+//     dat.lng = 0;
+//   }
 //     setTime(gps.time.hour(), gps.time.minute(), gps.time.second(), gps.date.day(), gps.date.month(), gps.date.year());
 //     dat.datetime = (uint32_t)now();
-//     dat.locktime = mTime;
+//     dat.locktime = mTime/1000;
 //     dat.hdop = gps.hdop.hdop();
 //     if(act_mode == true){
 //       dat.act = true;
@@ -435,6 +447,7 @@
 //   LoRa.write((uint8_t*)&p, sizeof(p));
 //   LoRa.endPacket();
 //   LoRa.sleep();
+  
 // }
 
 // void receive(unsigned int time){
@@ -472,7 +485,7 @@
 //         {
 //           Serial.println("Init Stream");
 //           read_send();
-//           rAdd = rAdd + 20;
+//           rAdd = rAdd + 16;
 //           Serial.println(rAdd);
         
 //         } while (rAdd <= wAdd);
@@ -597,8 +610,9 @@
 //   enablePower(POWER_WIRE);
 
 //   pinMode(RTC_PIN, OUTPUT);
-//   // pinMode(AINT, INPUT);
-//   // pinMode(RINT, INPUT);
+//   pinMode(AINT, INPUT);
+//   pinMode(RINT, INPUT);
+//   digitalWrite(RINT, LOW);
 
 //   Serial.begin(9600);
 //   gps_serial.begin(9600);
@@ -611,8 +625,9 @@
 //   if(!LoRa.begin(867E6)){
 //     Serial.println(F("LoRa Failed Init"));
 //   }
-//   LoRa.setTxPower(18);
-//   // LoRa.setSpreadingFactor(10);
+//   LoRa.setTxPower(20, PA_OUTPUT_PA_BOOST_PIN);
+//   LoRa.setSpreadingFactor(12);
+//   // LoRa.setSignalBandwidth(62.5E3);
 //   LoRa.sleep();
 
 //   // Activation Ping //
@@ -639,30 +654,44 @@
 //     Serial.println(F("WIPING FLASH"));
 //     if(flash.eraseChip()){
 //     Serial.println(F("Memory Wiped"));  
-//   }else
+//     }else
 //     {
 //       Serial.println(flash.error(VERBOSE));
 //     }
+//   }else{
+//     rAdd = flash.getAddress(16);
 //   }    
-//   flash.powerDown();
+//   if(flash.powerDown()){
+//     Serial.println("Powered Down");
+//     digitalWrite(1, HIGH);
+//   }else{
+//     Serial.println(flash.error(VERBOSE));
+//   }
 
 //   // Set Up Accelerometer //
 //   adxl.powerOn();
 //   adxl.setRangeSetting(8);
 //   adxl.set_bw(ADXL345_BW_0_78);
-//   // adxl.setLowPower(true);
+//   adxl.setLowPower(true);
 //   // Config Interrupts //  
 //   adxl.setImportantInterruptMapping(1,1,1,1,1);
 //   adxl.setActivityXYZ(1,1,1);
 //   adxl.setActivityThreshold(act_treshold);
-//   adxl.ActivityINT(1);
+//   if (activity_enabled == true)
+//   {
+//     adxl.ActivityINT(1);
+//   }else{
+//     adxl.ActivityINT(0);
+//   }
+  
+//   // adxl.ActivityINT(1);
 //   adxl.doubleTapINT(0);
 //   adxl.singleTapINT(0);
 //   adxl.InactivityINT(0);
 //   adxl.FreeFallINT(0);
 
 //   adxl.getInterruptSource();
-
+  
 //   digitalWrite(RTC_PIN, HIGH);
 //   RTC.set(strtTime);
 //   Serial.println(RTC.get());
@@ -683,92 +712,152 @@
 //   digitalWrite(RTC_PIN, LOW);
 //   delay(100);
   
-//   // Attach Interupt //
+//   // // Attach Interupt //
 //   attachInterrupt(digitalPinToInterrupt(AINT), isr, CHANGE);
 //   attachInterrupt(digitalPinToInterrupt(RINT), risr, CHANGE);
 
 //   Serial.println(F("SYSTEM READY"));
 //   delay(100);
-// //   disablePower(POWER_ADC);
-// //   disablePower(POWER_SERIAL0);
-// //   disablePower(POWER_SERIAL1);
-// //   disablePower(POWER_SPI);
-// //   disablePower(POWER_WIRE); 
+//   disablePower(POWER_ADC);
+//   disablePower(POWER_SERIAL0);
+//   disablePower(POWER_SERIAL1);
+//   disablePower(POWER_SPI);
+//   disablePower(POWER_WIRE); 
   
-// //   sleepMode(SLEEP_POWER_DOWN);
-// //   sleep();
+//   sleepMode(SLEEP_POWER_DOWN);
+//   sleep();
 
 // }
 
 // void loop() {
 //   // put your main code here, to run repeatedly:
 
-//     for (int i = 0; i < 100; i++)
-//     {
-//         Serial.println(F("Recording"));
-//         // recGPS(lat, lng);
-//         struct data{
-//         uint32_t datetime;
-//         uint16_t locktime;
-//         float lat;
-//         float lng;
-//         byte hdop;
-//         bool act;
-//         }dat;
+//   enablePower(POWER_ADC);
+//   enablePower(POWER_SERIAL0);
+//   enablePower(POWER_SERIAL1);
+//   enablePower(POWER_SPI);
+//   enablePower(POWER_WIRE);
 
-//         dat.lat = 13.123445 + i;
-//         dat.lng = 77.214341 + i;
-//         dat.datetime = (uint32_t)now();
-//         dat.locktime = i;
-//         dat.hdop = i;
-//         if(act_mode == true){
-//         dat.act = true;
-//         }else{
-//         dat.act = false;
-//         }    
-//         Serial.println(dat.datetime);
-//         Serial.println(dat.lat);
-//         Serial.println(dat.lng);
-//         Serial.println(dat.locktime);
-//         Serial.println(dat.hdop);
-//         Serial.println(dat.act);
-
-
-//     if (flash.powerUp())
-//     {
-//         Serial.println(F("Powered Up"));
-//         delay(500);
-//         wAdd = flash.getAddress(sizeof(dat));
-//         // Serial.println(sizeof(dat));
-//         Serial.println(wAdd);
-//         if (flash.writeAnything(wAdd, dat))
-//         {
-//         Serial.println(F("Write Successful"));
-//         cnt = cnt + 1;
-//         }else
-//         {
-//         Serial.println(F("Write Failed"));
-//         Serial.println(flash.error(VERBOSE));
-//         }     
-//     }else
-//     {
-//         Serial.println(F("Power Up Failed"));
-//     }   
-//     flash.powerDown();
-
-//         delay(100);
+//   Serial.println(F("AWAKE"));
+//   if(trigger == true){                                            
+//     byte interrupts = adxl.getInterruptSource();
+//     if(adxl.triggered(interrupts, ADXL345_ACTIVITY)){
+//     Serial.println(F("*** ACTIVITY ***")); 
+//     digitalWrite(RTC_PIN, HIGH);
+//     act_start = RTC.get();
+//     Serial.println(act_start);
+//     RTC.setAlarm(0, act_start + 10);
+//     gpsTime = act_start + 10;
+//     RTC.alarmPolarity(HIGH);
+//     digitalWrite(RTC_PIN, LOW);
+//     RTC.enableAlarm(0, ALM_MATCH_DATETIME);
+//     act_end = act_start + act_duration*60;  
+//     act_mode = true;  
 //     }
-//     do
-//     {
-//         Serial.println("Init Stream");
-//         read_send();
-//         rAdd = rAdd + 16;
-//         Serial.println(rAdd);
-//         delay(100);
+    
+//     attachInterrupt(digitalPinToInterrupt(AINT), isr, CHANGE);
+//     attachInterrupt(digitalPinToInterrupt(RINT), risr, CHANGE);
+//     delay(1000);
+//     adxl.getInterruptSource();
+//   }
+//   if (Alarm_Trig == true)
+//   {
+//     digitalWrite(RTC_PIN, HIGH);
+//     if(RTC.alarm(0)){
+//       Serial.println(F("ALARM 0"));
+//       time_t prevTime = RTC.get();
+//       if (act_mode == true && prevTime >= act_end)
+//       {
+//         act_mode = false;
+//         Serial.println(F("ACTIVITY MODE ENDING"));
+//       }      
+//       Serial.println(RTC.get());
+//       delay(10);
+//       RTC.alarmPolarity(HIGH);
+//       if (act_mode ==true)
+//       {
+//         RTC.setAlarm(0, gpsTime + 60*act_gpsFrequency);
+//         gpsTime = gpsTime + 60*act_gpsFrequency;
+//       }else{
+//         RTC.setAlarm(0, gpsTime + 60*gpsFrequency);
+//         gpsTime = gpsTime + 60*gpsFrequency;
+//       }      
+//       RTC.enableAlarm(0, ALM_MATCH_DATETIME);
+//       recGPS();
+//       ////////////////////////////////////////////////
+//       prevTime = RTC.get();
+//       if (window == true)
+//       {
+//         RTC.alarmPolarity(HIGH);      
+//         RTC.setAlarm(1, prevTime + 60*radioFrequency); // Add if statement for sch Mode
+//         pingTime = prevTime + 60*radioFrequency;    
+//         RTC.enableAlarm(1, ALM_MATCH_DATETIME);
+//       }
+      
+         
+//       /////////////////////////////////////////////// 
+//     }
+//     if(RTC.alarm(1)){
+//       Serial.println(F("ALARM 1"));
+//       Serial.println(RTC.get());
+//       delay(10);
+//       if (scheduled == false)
+//       {
+//         Serial.println(F("Normal Mode"));  
+//         RTC.alarmPolarity(HIGH);
+//         RTC.setAlarm(1, pingTime + 60*radioFrequency);
+//         pingTime = pingTime + 60*radioFrequency;
+//       } 
 
-//     } while (rAdd <= wAdd);
+//       if (scheduled == true && window == false)
+//       {
+//         Serial.println(F("Entering Scheduled Mode"));
+//         sch_start = RTC.get();
+//         sch_end = sch_start + sch_duration*60;
+//         PingAlarmTime = sch_start + 86400*sch_rpt_duration;
+//         Serial.print(F("PingAlmTime")); Serial.println(PingAlarmTime);
+//         window = true;
+//         pingTime = sch_start;
+//         delay(50);
+//       }
+//       if (scheduled == true && window == true)
+//       {
+//         time_t n = RTC.get();
+//         if (n >= sch_end)
+//         {
+//           Serial.println(F("Exiting Scheduled Mode"));
+//           window = false;
+//           RTC.setAlarm(1, PingAlarmTime);
+//         }else{
+//           RTC.setAlarm(1, pingTime + 60*radioFrequency);
+//           pingTime = pingTime + 60*radioFrequency;
+//           Serial.println(pingTime);
+//         }        
+//       }
+//       RTC.enableAlarm(1, ALM_MATCH_DATETIME);
+//       Ping(lat,lng,tag, cnt, devType);
+//       receive(rcv_duration*1000);
+      
+        
+//     }
+//     digitalWrite(RTC_PIN, LOW);
+
+//     adxl.getInterruptSource();
+//     attachInterrupt(digitalPinToInterrupt(AINT), isr, CHANGE);
+//     attachInterrupt(digitalPinToInterrupt(RINT), risr, CHANGE);
+//   }
+//   delay(10); 
   
-  
+//   Serial.println(F("SLEEPING..."));
+//   delay(50); 
+//   disablePower(POWER_ADC);
+//   disablePower(POWER_SERIAL0);
+//   disablePower(POWER_SERIAL1);
+//   disablePower(POWER_SPI);
+//   disablePower(POWER_WIRE); 
+
+//   sleepMode(SLEEP_POWER_DOWN);
+//   sleep();
 // }
 
 

@@ -30,7 +30,7 @@ const int PROGMEM LDIO = 0;
 
 ///// DEVICE DEFINITIONS /////
 
-const uint16_t tag = 10502;
+const uint16_t tag = 10501;
 const uint8_t devType = 107;
 
 ///// VARIABLES /////
